@@ -84,8 +84,9 @@ var gravity=.78;
 var jump=-14;
 var speed=7;
 
-var waveStart=6000;
-var waveEnd=9000;
+/* WAVE STARTS LATER TO GIVE YOU TIME TO REACT */
+var waveStart=7000;
+var waveEnd=10000;
 var waveMode=false;
 
 /* SPIKES ARE MORE SPACED OUT */
@@ -255,13 +256,24 @@ if(state!=='playing')return;
 world+=speed*dt;
 rot+=.08*dt;
 
-/* WAVE SECTION: 50% TO 75% */
+/* WAVE SECTION: 58% TO 83% */
 waveMode=world>=waveStart&&world<waveEnd;
 
-stateText.innerHTML=waveMode?'WAVE':'PLAYING';
+/* WARNING BEFORE THE WAVE */
+var waveWarning=world>=5200&&world<waveStart;
 
-/* SHOW WAVE INDICATOR */
-waveIndicator.style.display=waveMode?'block':'none';
+stateText.innerHTML=
+waveMode?'WAVE':
+(waveWarning?'READY':'PLAYING');
+
+/* WAVE INDICATOR */
+waveIndicator.style.display=
+(waveMode||waveWarning)?'block':'none';
+
+waveIndicator.innerHTML=
+waveMode?
+'🌊 WAVE SECTION':
+'⚠️ WAVE INCOMING — GET READY';
 
 if(waveMode){
 
@@ -359,7 +371,7 @@ function draw(){
 
 x.clearRect(0,0,W,H);
 
-/* GRID */
+/* BACKGROUND GRID */
 x.strokeStyle='rgba(110,231,255,.16)';
 x.lineWidth=2;
 
@@ -431,7 +443,7 @@ x.fill();
 
 }
 
-/* CUBE */
+/* PLAYER CUBE */
 x.save();
 
 x.translate(
