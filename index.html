@@ -15,6 +15,7 @@ canvas{width:100%;height:100%;background:linear-gradient(#111b46,#2a1247)}
 .key{display:inline-block;padding:3px 8px;border:2px solid #fff;border-radius:6px;background:#31395d}
 .hide{display:none}
 #hint{position:absolute;bottom:10px;width:100%;text-align:center;font-size:clamp(11px,1.5vw,17px);pointer-events:none}
+#waveIndicator{position:absolute;top:58px;left:50%;transform:translateX(-50%);z-index:4;padding:8px 18px;border:3px solid #6ee7ff;border-radius:12px;background:#081021dd;color:#6ee7ff;font-size:clamp(14px,2.5vw,28px);font-weight:bold;text-shadow:2px 2px #000;display:none;pointer-events:none}
 #jumpButton{position:absolute;right:24px;bottom:48px;z-index:5;font-size:clamp(22px,4vw,48px);font-weight:bold;color:#081021;background:#ffe45e;border:4px solid #fff;border-radius:18px;padding:18px 34px;box-shadow:0 0 0 4px #6ee7ff;cursor:pointer}
 #jumpButton:focus{outline:6px solid #ff416c;outline-offset:5px}
 </style>
@@ -39,6 +40,8 @@ Use the <span class="key">↑</span> arrow for jump too.<br>
 </p>
 </div>
 
+<div id="waveIndicator">🌊 WAVE SECTION</div>
+
 <button id="jumpButton" type="button" tabindex="0">JUMP</button>
 
 <div id="hint">
@@ -60,6 +63,7 @@ var score=document.getElementById('score');
 var progress=document.getElementById('progress');
 var stateText=document.getElementById('state');
 var jumpButton=document.getElementById('jumpButton');
+var waveIndicator=document.getElementById('waveIndicator');
 
 var state='menu';
 var world=0;
@@ -80,12 +84,16 @@ var gravity=.78;
 var jump=-14;
 var speed=7;
 
+var waveStart=6000;
+var waveEnd=9000;
+var waveMode=false;
+
+/* SPIKES ARE MORE SPACED OUT */
 var spikes=[];
 
-/* ALL SPIKES ARE THE SAME HEIGHT */
-for(var i=0;i<40;i++){
+for(var i=0;i<24;i++){
 spikes.push({
-x:620+i*300+(i%3)*45,
+x:700+i*460,
 h:65
 });
 }
@@ -132,6 +140,7 @@ hide();
 }
 
 function action(){
+
 if(state==='menu'||state==='dead'||state==='win'){
 reset();
 return;
@@ -142,10 +151,23 @@ pause();
 return;
 }
 
-if(state==='playing'&&p.ground){
+if(state==='playing'){
+
+if(waveMode){
+
+/* WAVE CONTROL */
+p.vy=p.vy<0?5:-5;
+
+}
+else if(p.ground){
+
 p.vy=jump;
 p.ground=false;
+
 }
+
+}
+
 }
 
 jumpButton.addEventListener('click',function(e){
@@ -154,6 +176,7 @@ action();
 },false);
 
 jumpButton.addEventListener('keydown',function(e){
+
 var n=e.keyCode||e.which;
 var k=(e.key||'').toLowerCase();
 
@@ -161,15 +184,23 @@ if(n===13||n===32||k==='enter'||k===' '){
 e.preventDefault();
 action();
 }
+
 },false);
 
 function dead(){
+
 state='dead';
 stateText.innerHTML='DEAD';
-show('GAME OVER','Press <span class="key">OK/LIST</span> to retry');
+
+show(
+'💀 GAME OVER',
+'Press <span class="key">OK/LIST</span> to retry'
+);
+
 }
 
 function key(e){
+
 var k=(e.key||'').toLowerCase();
 var n=e.keyCode||e.which;
 
@@ -202,41 +233,80 @@ e.preventDefault();
 pause();
 return;
 }
+
 }
 
 window.addEventListener('keydown',key,false);
 document.addEventListener('keydown',key,false);
 
 function hit(a,b){
+
 return a.x<b.x+b.w&&
 a.x+a.w>b.x&&
 a.y<b.y+b.h&&
 a.y+a.h>b.y;
+
 }
 
 function update(dt){
+
 if(state!=='playing')return;
 
 world+=speed*dt;
 rot+=.08*dt;
 
+/* WAVE SECTION: 50% TO 75% */
+waveMode=world>=waveStart&&world<waveEnd;
+
+stateText.innerHTML=waveMode?'WAVE':'PLAYING';
+
+/* SHOW WAVE INDICATOR */
+waveIndicator.style.display=waveMode?'block':'none';
+
+if(waveMode){
+
+p.y+=p.vy*dt;
+
+if(p.y<70){
+p.y=70;
+p.vy=5;
+}
+
+if(p.y+p.h>floor-35){
+p.y=floor-35-p.h;
+p.vy=-5;
+}
+
+}
+else{
+
 p.vy+=gravity*dt;
 p.y+=p.vy*dt;
 
 if(p.y+p.h>=floor){
+
 p.y=floor-p.h;
 p.vy=0;
 p.ground=true;
+
 }
 else{
+
 p.ground=false;
+
 }
 
+}
+
+/* COLLISION CHECK */
 for(var i=0;i<spikes.length;i++){
+
 var s=spikes[i];
 
+var sx=s.x-world+p.x;
+
 var o={
-x:s.x-world+p.x,
+x:sx,
 y:floor-s.h,
 w:48,
 h:s.h
@@ -246,44 +316,92 @@ if(hit(p,o)){
 dead();
 return;
 }
+
+/* TOP SPIKES DURING WAVE */
+if(waveMode&&sx>300&&sx<900){
+
+var top={
+x:sx,
+y:70,
+w:48,
+h:65
+};
+
+if(hit(p,top)){
+dead();
+return;
+}
+
+}
+
 }
 
 if(world>=12000){
+
 state='win';
 stateText.innerHTML='100%';
-show('100% COMPLETE','Press <span class="key">OK/LIST</span> to play again');
+
+show(
+'🏆 100% COMPLETE',
+'Press <span class="key">OK/LIST</span> to play again'
+);
+
 }
 
 score.innerHTML='Score: '+Math.floor(world/10);
-progress.innerHTML=Math.min(100,Math.floor(world/120))+'%';
+
+progress.innerHTML=
+Math.min(100,Math.floor(world/120))+'%';
+
 }
 
 function draw(){
+
 x.clearRect(0,0,W,H);
 
+/* GRID */
 x.strokeStyle='rgba(110,231,255,.16)';
 x.lineWidth=2;
 
 for(var i=-((world*.3)%80);i<W;i+=80){
+
 x.beginPath();
 x.moveTo(i,0);
 x.lineTo(i,H);
 x.stroke();
+
 }
 
+/* FLOOR */
 x.fillStyle='#151a38';
 x.fillRect(0,floor,W,H-floor);
 
+/* WAVE BACKGROUND */
+if(waveMode){
+
+x.fillStyle='rgba(110,231,255,.12)';
+x.fillRect(0,70,W,floor-105);
+
+x.fillStyle='#6ee7ff';
+x.font='bold 34px Arial';
+x.fillText('WAVE SECTION',470,120);
+
+}
+
+/* FLOOR LINE */
 x.strokeStyle='#6ee7ff';
 x.lineWidth=5;
+
 x.beginPath();
 x.moveTo(0,floor);
 x.lineTo(W,floor);
 x.stroke();
 
-/* DRAW SPIKES WITH THE SAME HEIGHT */
+/* SPIKES */
 for(var i=0;i<spikes.length;i++){
+
 var s=spikes[i];
+
 var sx=s.x-world+p.x;
 
 if(sx<-80||sx>W+80)continue;
@@ -291,16 +409,36 @@ if(sx<-80||sx>W+80)continue;
 var sy=floor-s.h;
 
 x.fillStyle='#ff416c';
+
 x.beginPath();
 x.moveTo(sx,floor);
 x.lineTo(sx+24,sy);
 x.lineTo(sx+48,floor);
 x.closePath();
 x.fill();
+
+/* TOP SPIKES IN WAVE MODE */
+if(waveMode){
+
+x.beginPath();
+x.moveTo(sx,70);
+x.lineTo(sx+24,135);
+x.lineTo(sx+48,70);
+x.closePath();
+x.fill();
+
 }
 
+}
+
+/* CUBE */
 x.save();
-x.translate(p.x+p.w/2,p.y+p.h/2);
+
+x.translate(
+p.x+p.w/2,
+p.y+p.h/2
+);
+
 x.rotate(rot);
 
 x.fillStyle='#ffe45e';
@@ -311,30 +449,42 @@ x.lineWidth=3;
 x.strokeRect(-21,-21,42,42);
 
 x.restore();
+
 }
 
 function loop(t){
+
 var dt=Math.min(2,(t-last)/16.67||1);
+
 last=t;
 
 update(dt);
 draw();
 
 if(window.requestAnimationFrame){
+
 window.requestAnimationFrame(loop);
+
 }
 else{
+
 setTimeout(function(){
 loop(new Date().getTime());
 },16);
+
 }
+
 }
 
 if(window.requestAnimationFrame){
+
 window.requestAnimationFrame(loop);
+
 }
 else{
+
 loop(new Date().getTime());
+
 }
 
 })();
