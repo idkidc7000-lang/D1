@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dyon Remote Dash</title>
+<style>
+html,body{margin:0;height:100%;background:#080b1d;color:#fff;font-family:Arial,sans-serif;overflow:hidden}
+#wrap{position:relative;width:100%;height:100%}
+canvas{width:100%;height:100%;background:#111b46}
+#hud{position:absolute;top:12px;left:16px;right:16px;display:flex;justify-content:space-between;font-size:24px;font-weight:bold;text-shadow:2px 2px #000;pointer-events:none}
+#panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80%;padding:25px;text-align:center;background:#0b1028;border:3px solid #6ee7ff;border-radius:16px}
+#panel h1{font-size:42px;margin:0 0 12px}
+#panel p{font-size:20px;line-height:1.45}
+.key{display:inline-block;padding:3px 8px;border:2px solid #fff;border-radius:6px;background:#31395d}
+.hide{display:none}
+#hint{position:absolute;bottom:10px;width:100%;text-align:center;font-size:15px;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="wrap">
+<canvas id="game" width="1280" height="720"></canvas>
+<div id="hud"><span id="score">Score: 0</span><span id="progress">0%</span><span id="state">READY</span></div>
+<div id="panel">
+<h1 id="title">REMOTE DASH</h1>
+<p id="message">Press <span class="key">OK/LIST</span> to start or jump.<br>Use the <span class="key">UP</span> arrow for jump too.<br><span class="key">BACK</span> pauses.</p>
+</div>
+<div id="hint">OK/LIST or UP = jump | BACK/EXIT = pause | 100% = win</div>
+</div>
+<script>
+(function(){
+var c=document.getElementById('game'),x=c.getContext('2d'),W=1280,H=720;
+var panel=document.getElementById('panel'),title=document.getElementById('title'),message=document.getElementById('message');
+var score=document.getElementById('score'),progress=document.getElementById('progress'),stateText=document.getElementById('state');
+var state='menu',world=0,rot=0,last=0;
+var p={x:190,y:570,w:42,h:42,vy:0,ground:true};
+var floor=612,gravity=.78,jump=-14,speed=7;
+var spikes=[],i;
+for(i=0;i<40;i++){spikes.push({x:620+i*300+(i%3)*45,h:55+(i%4)*15});}
+function show(t,m){title.innerHTML=t;message.innerHTML=m;panel.className='';}
+function hide(){panel.className='hide';}
+function reset(){world=0;rot=0;p={x:190,y:570,w:42,h:42,vy:0,ground:true};state='playing';stateText.innerHTML='PLAYING';hide();}
+function pause(){if(state==='playing'){state='paused';stateText.innerHTML='PAUSED';show('PAUSED','Press <span class="key">OK/LIST</span> to continue');}else if(state==='paused'){state='playing';stateText.innerHTML='PLAYING';hide();}}
+function action(){if(state==='menu'||state==='dead'||state==='win'){reset();return;}if(state==='paused'){pause();return;}if(state==='playing'&&p.ground){p.vy=jump;p.ground=false;}}
+function dead(){state='dead';stateText.innerHTML='DEAD';show('GAME OVER','Press <span class="key">OK/LIST</span> to retry');}
+function key(e){var k=(e.key||'').toLowerCase(),n=e.keyCode||e.which;
+var jumpKey=k==='enter'||k===' '||k==='arrowup'||k==='ok'||k==='select'||n===13||n===32||n===38;
+var backKey=k==='escape'||k==='back'||k==='exit'||n===27||n===8||n===461;
+if(jumpKey){if(e.preventDefault)e.preventDefault();action();return;}
+if(backKey){if(e.preventDefault)e.preventDefault();pause();return;}}
+window.addEventListener('keydown',key,false);
+document.addEventListener('keydown',key,false);
+function hit(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+function update(dt){var j,o;
+if(state!=='playing')return;
+world+=speed*dt;rot+=.08*dt;p.vy+=gravity*dt;p.y+=p.vy*dt;
+if(p.y+p.h>=floor){p.y=floor-p.h;p.vy=0;p.ground=true;}else{p.ground=false;}
+for(j=0;j<spikes.length;j++){var s=spikes[j];o={x:s.x-world+p.x,y:floor-s.h,w:48,h:s.h};if(hit(p,o)){dead();return;}}
+if(world>=12000){state='win';stateText.innerHTML='100%';show('100% COMPLETE','Press <span class="key">OK/LIST</span> to play again');}
+score.innerHTML='Score: '+Math.floor(world/10);progress.innerHTML=Math.min(100,Math.floor(world/120))+'%';}
+function draw(){var j,s,sx,sy;
+x.clearRect(0,0,W,H);x.strokeStyle='rgba(110,231,255,.16)';x.lineWidth=2;
+for(var i=-((world*.3)%80);i<W;i+=80){x.beginPath();x.moveTo(i,0);x.lineTo(i,H);x.stroke();}
+x.fillStyle='#151a38';x.fillRect(0,floor,W,H-floor);x.strokeStyle='#6ee7ff';x.lineWidth=5;x.beginPath();x.moveTo(0,floor);x.lineTo(W,floor);x.stroke();
+for(j=0;j<spikes.length;j++){s=spikes[j];sx=s.x-world+p.x;if(sx<-80||sx>W+80)continue;sy=floor-s.h;x.fillStyle='#ff416c';x.beginPath();x.moveTo(sx,floor);x.lineTo(sx+24,sy);x.lineTo(sx+48,floor);x.closePath();x.fill();}
+x.save();x.translate(p.x+p.w/2,p.y+p.h/2);x.rotate(rot);x.fillStyle='#ffe45e';x.fillRect(-21,-21,42,42);x.strokeStyle='#fff';x.lineWidth=3;x.strokeRect(-21,-21,42,42);x.restore();}
+function loop(t){var dt=Math.min(2,(t-last)/16.67||1);last=t;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
