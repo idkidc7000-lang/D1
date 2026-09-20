@@ -2,504 +2,642 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dyon Remote Dash</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Blocky Tree World 3D</title>
+
 <style>
-html,body{margin:0;height:100%;background:#080b1d;color:#fff;font-family:Arial,sans-serif;overflow:hidden}
-#wrap{position:relative;width:100%;height:100%;display:grid;place-items:center}
-canvas{width:100%;height:100%;background:linear-gradient(#111b46,#2a1247)}
-#hud{position:absolute;top:12px;left:16px;right:16px;display:flex;justify-content:space-between;font-size:clamp(15px,2.4vw,28px);font-weight:bold;text-shadow:2px 2px #000;pointer-events:none}
-#panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(88%,600px);padding:25px;text-align:center;background:#0b1028ee;border:3px solid #6ee7ff;border-radius:16px}
-#panel h1{font-size:clamp(28px,5vw,58px);margin:0 0 12px}
-#panel p{font-size:clamp(16px,2.3vw,24px);line-height:1.45}
-.key{display:inline-block;padding:3px 8px;border:2px solid #fff;border-radius:6px;background:#31395d}
-.hide{display:none}
-#hint{position:absolute;bottom:10px;width:100%;text-align:center;font-size:clamp(11px,1.5vw,17px);pointer-events:none}
-#waveIndicator{position:absolute;top:58px;left:50%;transform:translateX(-50%);z-index:4;padding:8px 18px;border:3px solid #6ee7ff;border-radius:12px;background:#081021dd;color:#6ee7ff;font-size:clamp(14px,2.5vw,28px);font-weight:bold;text-shadow:2px 2px #000;display:none;pointer-events:none}
-#jumpButton{position:absolute;right:24px;bottom:48px;z-index:5;font-size:clamp(22px,4vw,48px);font-weight:bold;color:#081021;background:#ffe45e;border:4px solid #fff;border-radius:18px;padding:18px 34px;box-shadow:0 0 0 4px #6ee7ff;cursor:pointer}
-#jumpButton:focus{outline:6px solid #ff416c;outline-offset:5px}
+html,body{
+  margin:0;
+  height:100%;
+  overflow:hidden;
+  background:#8bd5ff;
+  font-family:Arial,sans-serif;
+  touch-action:none;
+}
+
+canvas{
+  display:block;
+  width:100vw;
+  height:100vh;
+  image-rendering:pixelated;
+}
+
+#ui{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+}
+
+button{
+  pointer-events:auto;
+  border:2px solid #ffffffaa;
+  background:#263b2be8;
+  color:white;
+  border-radius:12px;
+  font-size:18px;
+  font-weight:bold;
+}
+
+#pad{
+  position:absolute;
+  left:18px;
+  bottom:18px;
+  width:170px;
+  height:170px;
+}
+
+#pad button{
+  position:absolute;
+  width:58px;
+  height:58px;
+}
+
+#up{
+  left:56px;
+  top:0;
+}
+
+#left{
+  left:0;
+  top:56px;
+}
+
+#down{
+  left:56px;
+  top:112px;
+}
+
+#right{
+  left:112px;
+  top:56px;
+}
+
+#look{
+  position:absolute;
+  right:18px;
+  bottom:145px;
+  width:190px;
+  height:64px;
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+}
+
+#look button{
+  width:84px;
+  height:56px;
+}
+
+#actions{
+  position:absolute;
+  right:18px;
+  bottom:25px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  width:190px;
+  justify-content:flex-end;
+}
+
+#actions button{
+  width:84px;
+  height:56px;
+}
+
+#info{
+  position:absolute;
+  top:10px;
+  left:10px;
+  color:#fff;
+  text-shadow:2px 2px #000;
+  font-size:12px;
+}
+
+#hint{
+  position:absolute;
+  top:28px;
+  left:10px;
+  color:#fff;
+  text-shadow:2px 2px #000;
+  font-size:11px;
+}
 </style>
 </head>
+
 <body>
 
-<div id="wrap">
-<canvas id="game" width="1280" height="720"></canvas>
+<canvas id="game"></canvas>
 
-<div id="hud">
-<span id="score">Score: 0</span>
-<span id="progress">0%</span>
-<span id="state">READY</span>
-</div>
+<div id="ui">
 
-<div id="panel">
-<h1 id="title">REMOTE DASH</h1>
-<p id="message">
-Press <span class="key">OK/LIST</span> to start or jump.<br>
-Use the <span class="key">↑</span> arrow for jump too.<br>
-<span class="key">BACK</span> pauses; <span class="key">EXIT</span> pauses.
-</p>
-</div>
+  <div id="info">BLOCKY TREE WORLD</div>
 
-<div id="waveIndicator">🌊 WAVE SECTION</div>
+  <div id="hint">
+    Use LOOK buttons to turn • BREAK removes a tree block
+  </div>
 
-<button id="jumpButton" type="button" tabindex="0">JUMP</button>
+  <!-- Movement controls -->
+  <div id="pad">
+    <button id="up">▲</button>
+    <button id="left">◀</button>
+    <button id="down">▼</button>
+    <button id="right">▶</button>
+  </div>
 
-<div id="hint">
-Move the cursor onto JUMP and press OK • ↑ = jump • BACK/EXIT = pause
-</div>
+  <!-- Separate look controls -->
+  <div id="look">
+    <button id="lookLeft">LOOK ◀</button>
+    <button id="lookRight">LOOK ▶</button>
+  </div>
+
+  <!-- Action controls -->
+  <div id="actions">
+    <button id="jump">FORWARD</button>
+    <button id="break">BREAK</button>
+    <button id="reset">RESET</button>
+  </div>
+
 </div>
 
 <script>
-(function(){
 
-var c=document.getElementById('game');
-var x=c.getContext('2d');
-var W=1280,H=720;
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
 
-var panel=document.getElementById('panel');
-var title=document.getElementById('title');
-var message=document.getElementById('message');
-var score=document.getElementById('score');
-var progress=document.getElementById('progress');
-var stateText=document.getElementById('state');
-var jumpButton=document.getElementById('jumpButton');
-var waveIndicator=document.getElementById('waveIndicator');
+const RW = 320;
+const RH = 180;
 
-var state='menu';
-var world=0;
-var rot=0;
-var last=0;
+canvas.width = RW;
+canvas.height = RH;
 
-var p={
-x:190,
-y:570,
-w:42,
-h:42,
-vy:0,
-ground:true
-};
+const W = 24;
+const H = 24;
 
-var floor=612;
-var gravity=.78;
-var jump=-14;
-var speed=7;
+let px = 8.5;
+let py = 13.5;
+let ang = -Math.PI / 2;
 
-/* WAVE STARTS LATER TO GIVE YOU TIME TO REACT */
-var waveStart=7000;
-var waveEnd=10000;
-var waveMode=false;
+let move = {};
+let removed = new Set();
 
-/* SPIKES ARE MORE SPACED OUT */
-var spikes=[];
+const trees = [
+  [4,5],
+  [10,4],
+  [17,5],
+  [20,10],
+  [5,15],
+  [13,17],
+  [19,18],
+  [9,21],
+  [3,10]
+];
 
-for(var i=0;i<24;i++){
-spikes.push({
-x:700+i*460,
-h:65
+function key(x,y){
+  return x + ',' + y;
+}
+
+function treeAt(x,y){
+  return trees.some(t => t[0] === x && t[1] === y);
+}
+
+function trunkAt(x,y){
+  return treeAt(x,y) && !removed.has(key(x,y));
+}
+
+function leafAt(x,y){
+
+  if(removed.has(key(x,y))){
+    return false;
+  }
+
+  for(const [tx,ty] of trees){
+
+    for(let dx = -1; dx <= 1; dx++){
+      for(let dy = -1; dy <= 1; dy++){
+
+        if(
+          x === tx + dx &&
+          y === ty + dy &&
+          !removed.has(key(x,y))
+        ){
+          return true;
+        }
+
+      }
+    }
+
+    if(
+      x === tx &&
+      y === ty - 2 &&
+      !removed.has(key(x,y))
+    ){
+      return true;
+    }
+
+  }
+
+  return false;
+}
+
+function solid(x,y){
+
+  if(
+    x < 0 ||
+    y < 0 ||
+    x >= W ||
+    y >= H
+  ){
+    return true;
+  }
+
+  return trunkAt(x,y) || leafAt(x,y);
+}
+
+function bind(id,k){
+
+  const el = document.getElementById(id);
+
+  el.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    move[k] = 1;
+  });
+
+  [
+    'pointerup',
+    'pointercancel',
+    'pointerleave'
+  ].forEach(type => {
+
+    el.addEventListener(type, () => {
+      move[k] = 0;
+    });
+
+  });
+
+}
+
+bind('up','f');
+bind('down','b');
+bind('left','l');
+bind('right','r');
+
+bind('lookLeft','lookL');
+bind('lookRight','lookR');
+
+
+// Optional drag-to-look
+let lookPointer = null;
+let lastX = 0;
+
+canvas.addEventListener('pointerdown', e => {
+
+  lookPointer = e.pointerId;
+  lastX = e.clientX;
+
+  canvas.setPointerCapture(e.pointerId);
+
 });
+
+canvas.addEventListener('pointermove', e => {
+
+  if(lookPointer !== e.pointerId){
+    return;
+  }
+
+  const dx = e.clientX - lastX;
+
+  lastX = e.clientX;
+
+  ang += dx * 0.012;
+
+});
+
+canvas.addEventListener('pointerup', e => {
+
+  if(e.pointerId === lookPointer){
+    lookPointer = null;
+  }
+
+});
+
+canvas.addEventListener('pointercancel', e => {
+
+  if(e.pointerId === lookPointer){
+    lookPointer = null;
+  }
+
+});
+
+
+// Move forward button
+function moveForward(amount){
+
+  const nx = px + Math.cos(ang) * amount;
+  const ny = py + Math.sin(ang) * amount;
+
+  if(
+    !solid(
+      Math.floor(nx),
+      Math.floor(ny)
+    )
+  ){
+
+    px = nx;
+    py = ny;
+
+  }
+
 }
 
-function show(t,m){
-title.innerHTML=t;
-message.innerHTML=m;
-panel.className='';
-}
-
-function hide(){
-panel.className='hide';
-}
-
-function reset(){
-world=0;
-rot=0;
-
-p={
-x:190,
-y:570,
-w:42,
-h:42,
-vy:0,
-ground:true
+document.getElementById('jump').onclick = () => {
+  moveForward(0.45);
 };
 
-state='playing';
-stateText.innerHTML='PLAYING';
-hide();
-}
 
-function pause(){
-if(state==='playing'){
-state='paused';
-stateText.innerHTML='PAUSED';
-show('PAUSED','Press <span class="key">OK/LIST</span> to continue');
-}
-else if(state==='paused'){
-state='playing';
-stateText.innerHTML='PLAYING';
-hide();
-}
-}
+// Reset the world
+document.getElementById('reset').onclick = () => {
 
-function action(){
+  px = 8.5;
+  py = 13.5;
+  ang = -Math.PI / 2;
 
-if(state==='menu'||state==='dead'||state==='win'){
-reset();
-return;
-}
+  removed.clear();
 
-if(state==='paused'){
-pause();
-return;
-}
-
-if(state==='playing'){
-
-if(waveMode){
-
-/* WAVE CONTROL */
-p.vy=p.vy<0?5:-5;
-
-}
-else if(p.ground){
-
-p.vy=jump;
-p.ground=false;
-
-}
-
-}
-
-}
-
-jumpButton.addEventListener('click',function(e){
-e.preventDefault();
-action();
-},false);
-
-jumpButton.addEventListener('keydown',function(e){
-
-var n=e.keyCode||e.which;
-var k=(e.key||'').toLowerCase();
-
-if(n===13||n===32||k==='enter'||k===' '){
-e.preventDefault();
-action();
-}
-
-},false);
-
-function dead(){
-
-state='dead';
-stateText.innerHTML='DEAD';
-
-show(
-'💀 GAME OVER',
-'Press <span class="key">OK/LIST</span> to retry'
-);
-
-}
-
-function key(e){
-
-var k=(e.key||'').toLowerCase();
-var n=e.keyCode||e.which;
-
-var jumpKey=
-k==='enter'||
-k===' '||
-k==='arrowup'||
-k==='ok'||
-k==='select'||
-n===13||
-n===32||
-n===38;
-
-var backKey=
-k==='escape'||
-k==='back'||
-k==='exit'||
-n===27||
-n===8||
-n===461;
-
-if(jumpKey){
-e.preventDefault();
-action();
-return;
-}
-
-if(backKey){
-e.preventDefault();
-pause();
-return;
-}
-
-}
-
-window.addEventListener('keydown',key,false);
-document.addEventListener('keydown',key,false);
-
-function hit(a,b){
-
-return a.x<b.x+b.w&&
-a.x+a.w>b.x&&
-a.y<b.y+b.h&&
-a.y+a.h>b.y;
-
-}
-
-function update(dt){
-
-if(state!=='playing')return;
-
-world+=speed*dt;
-rot+=.08*dt;
-
-/* WAVE SECTION: 58% TO 83% */
-waveMode=world>=waveStart&&world<waveEnd;
-
-/* WARNING BEFORE THE WAVE */
-var waveWarning=world>=5200&&world<waveStart;
-
-stateText.innerHTML=
-waveMode?'WAVE':
-(waveWarning?'READY':'PLAYING');
-
-/* WAVE INDICATOR */
-waveIndicator.style.display=
-(waveMode||waveWarning)?'block':'none';
-
-waveIndicator.innerHTML=
-waveMode?
-'🌊 WAVE SECTION':
-'⚠️ WAVE INCOMING — GET READY';
-
-if(waveMode){
-
-p.y+=p.vy*dt;
-
-if(p.y<70){
-p.y=70;
-p.vy=5;
-}
-
-if(p.y+p.h>floor-35){
-p.y=floor-35-p.h;
-p.vy=-5;
-}
-
-}
-else{
-
-p.vy+=gravity*dt;
-p.y+=p.vy*dt;
-
-if(p.y+p.h>=floor){
-
-p.y=floor-p.h;
-p.vy=0;
-p.ground=true;
-
-}
-else{
-
-p.ground=false;
-
-}
-
-}
-
-/* COLLISION CHECK */
-for(var i=0;i<spikes.length;i++){
-
-var s=spikes[i];
-
-var sx=s.x-world+p.x;
-
-var o={
-x:sx,
-y:floor-s.h,
-w:48,
-h:s.h
 };
 
-if(hit(p,o)){
-dead();
-return;
-}
 
-/* TOP SPIKES DURING WAVE */
-if(waveMode&&sx>300&&sx<900){
+// Break nearby tree blocks
+document.getElementById('break').onclick = () => {
 
-var top={
-x:sx,
-y:70,
-w:48,
-h:65
+  for(let d = 0.8; d <= 3; d += 0.12){
+
+    const x = Math.floor(
+      px + Math.cos(ang) * d
+    );
+
+    const y = Math.floor(
+      py + Math.sin(ang) * d
+    );
+
+    if(
+      trunkAt(x,y) ||
+      leafAt(x,y)
+    ){
+
+      removed.add(key(x,y));
+      break;
+
+    }
+
+  }
+
 };
 
-if(hit(p,top)){
-dead();
-return;
-}
+
+// Update movement
+function update(){
+
+  const s = 0.05;
+
+  let dx = 0;
+  let dy = 0;
+
+  if(move.f){
+
+    dx += Math.cos(ang) * s;
+    dy += Math.sin(ang) * s;
+
+  }
+
+  if(move.b){
+
+    dx -= Math.cos(ang) * s;
+    dy -= Math.sin(ang) * s;
+
+  }
+
+  // Movement turning
+  if(move.l){
+    ang -= 0.055;
+  }
+
+  if(move.r){
+    ang += 0.055;
+  }
+
+  // Separate looking controls
+  if(move.lookL){
+    ang -= 0.065;
+  }
+
+  if(move.lookR){
+    ang += 0.065;
+  }
+
+  // Collision detection
+  if(
+    !solid(
+      Math.floor(px + dx),
+      Math.floor(py)
+    )
+  ){
+
+    px += dx;
+
+  }
+
+  if(
+    !solid(
+      Math.floor(px),
+      Math.floor(py + dy)
+    )
+  ){
+
+    py += dy;
+
+  }
 
 }
 
+
+// Render lightweight 3D
+function render(){
+
+  // Sky gradient
+  const sky = ctx.createLinearGradient(
+    0,
+    0,
+    0,
+    RH / 2
+  );
+
+  sky.addColorStop(0,'#78cfff');
+  sky.addColorStop(1,'#d8f5ff');
+
+  ctx.fillStyle = sky;
+  ctx.fillRect(
+    0,
+    0,
+    RW,
+    RH / 2
+  );
+
+  // Green baseplate
+  ctx.fillStyle = '#70b94e';
+
+  ctx.fillRect(
+    0,
+    RH / 2,
+    RW,
+    RH / 2
+  );
+
+  const fov = Math.PI / 3;
+
+  // Raycasting
+  for(let x = 0; x < RW; x++){
+
+    const ra =
+      ang -
+      fov / 2 +
+      fov * x / RW;
+
+    const rx = Math.cos(ra);
+    const ry = Math.sin(ra);
+
+    let d = 0;
+    let kind = 0;
+
+    while(d < 28){
+
+      d += 0.035;
+
+      const gx = Math.floor(
+        px + rx * d
+      );
+
+      const gy = Math.floor(
+        py + ry * d
+      );
+
+      if(
+        gx < 0 ||
+        gy < 0 ||
+        gx >= W ||
+        gy >= H
+      ){
+
+        kind = 1;
+        break;
+
+      }
+
+      if(trunkAt(gx,gy)){
+
+        kind = 2;
+        break;
+
+      }
+
+      if(leafAt(gx,gy)){
+
+        kind = 3;
+        break;
+
+      }
+
+    }
+
+    if(kind){
+
+      const corrected = Math.max(
+        0.12,
+        d * Math.cos(ra - ang)
+      );
+
+      const h = Math.min(
+        RH * 1.5,
+        RH / (corrected + 0.01) * 0.55
+      );
+
+      let r = 112;
+      let g = 180;
+      let b = 70;
+
+      // Brown tree trunk
+      if(kind === 2){
+
+        r = 126;
+        g = 78;
+        b = 38;
+
+      }
+
+      // Green tree leaves
+      if(kind === 3){
+
+        r = 43;
+        g = 145;
+        b = 48;
+
+      }
+
+      const shade = Math.max(
+        0.35,
+        1 - corrected * 0.025
+      );
+
+      ctx.fillStyle =
+        'rgb(' +
+        Math.floor(r * shade) + ',' +
+        Math.floor(g * shade) + ',' +
+        Math.floor(b * shade) +
+        ')';
+
+      ctx.fillRect(
+        x,
+        (RH - h) / 2,
+        1,
+        Math.ceil(h)
+      );
+
+    }
+
+  }
+
+  // Crosshair
+  ctx.fillStyle = '#fff';
+
+  ctx.fillRect(
+    RW / 2 - 4,
+    RH / 2,
+    8,
+    1
+  );
+
+  ctx.fillRect(
+    RW / 2,
+    RH / 2 - 4,
+    1,
+    8
+  );
+
 }
 
-if(world>=12000){
 
-state='win';
-stateText.innerHTML='100%';
+// Game loop
+function loop(){
 
-show(
-'🏆 100% COMPLETE',
-'Press <span class="key">OK/LIST</span> to play again'
-);
+  update();
+  render();
 
-}
-
-score.innerHTML='Score: '+Math.floor(world/10);
-
-progress.innerHTML=
-Math.min(100,Math.floor(world/120))+'%';
+  requestAnimationFrame(loop);
 
 }
 
-function draw(){
+loop();
 
-x.clearRect(0,0,W,H);
-
-/* BACKGROUND GRID */
-x.strokeStyle='rgba(110,231,255,.16)';
-x.lineWidth=2;
-
-for(var i=-((world*.3)%80);i<W;i+=80){
-
-x.beginPath();
-x.moveTo(i,0);
-x.lineTo(i,H);
-x.stroke();
-
-}
-
-/* FLOOR */
-x.fillStyle='#151a38';
-x.fillRect(0,floor,W,H-floor);
-
-/* WAVE BACKGROUND */
-if(waveMode){
-
-x.fillStyle='rgba(110,231,255,.12)';
-x.fillRect(0,70,W,floor-105);
-
-x.fillStyle='#6ee7ff';
-x.font='bold 34px Arial';
-x.fillText('WAVE SECTION',470,120);
-
-}
-
-/* FLOOR LINE */
-x.strokeStyle='#6ee7ff';
-x.lineWidth=5;
-
-x.beginPath();
-x.moveTo(0,floor);
-x.lineTo(W,floor);
-x.stroke();
-
-/* SPIKES */
-for(var i=0;i<spikes.length;i++){
-
-var s=spikes[i];
-
-var sx=s.x-world+p.x;
-
-if(sx<-80||sx>W+80)continue;
-
-var sy=floor-s.h;
-
-x.fillStyle='#ff416c';
-
-x.beginPath();
-x.moveTo(sx,floor);
-x.lineTo(sx+24,sy);
-x.lineTo(sx+48,floor);
-x.closePath();
-x.fill();
-
-/* TOP SPIKES IN WAVE MODE */
-if(waveMode){
-
-x.beginPath();
-x.moveTo(sx,70);
-x.lineTo(sx+24,135);
-x.lineTo(sx+48,70);
-x.closePath();
-x.fill();
-
-}
-
-}
-
-/* PLAYER CUBE */
-x.save();
-
-x.translate(
-p.x+p.w/2,
-p.y+p.h/2
-);
-
-x.rotate(rot);
-
-x.fillStyle='#ffe45e';
-x.fillRect(-21,-21,42,42);
-
-x.strokeStyle='#fff';
-x.lineWidth=3;
-x.strokeRect(-21,-21,42,42);
-
-x.restore();
-
-}
-
-function loop(t){
-
-var dt=Math.min(2,(t-last)/16.67||1);
-
-last=t;
-
-update(dt);
-draw();
-
-if(window.requestAnimationFrame){
-
-window.requestAnimationFrame(loop);
-
-}
-else{
-
-setTimeout(function(){
-loop(new Date().getTime());
-},16);
-
-}
-
-}
-
-if(window.requestAnimationFrame){
-
-window.requestAnimationFrame(loop);
-
-}
-else{
-
-loop(new Date().getTime());
-
-}
-
-})();
 </script>
+
 </body>
 </html>
