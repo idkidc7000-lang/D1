@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mini World</title>
 
 <style>
@@ -14,7 +14,6 @@ html,body{
     background:#18202a;
     color:white;
     font-family:Arial;
-    touch-action:none
 }
 
 #menu{
@@ -26,121 +25,90 @@ html,body{
     background:#10151c;
     display:flex;
     justify-content:center;
-    align-items:center
+    align-items:center;
 }
 
 .box{
     width:90%;
-    max-width:420px;
+    max-width:400px;
     background:#222b38;
     padding:25px;
     box-sizing:border-box;
     border-radius:15px;
-    text-align:center
-}
-
-input,button{
-    width:100%;
-    box-sizing:border-box;
-    padding:15px;
-    margin:7px 0;
-    font-size:18px;
-    border-radius:8px;
-    border:0
+    text-align:center;
 }
 
 input{
-    background:#111820;
-    color:white;
-    border:1px solid #667
+    width:100%;
+    padding:15px;
+    box-sizing:border-box;
+    font-size:18px;
+    border-radius:8px;
+    border:0;
+    margin:8px 0;
 }
 
 button{
+    width:100%;
+    padding:15px;
+    margin:8px 0;
+    font-size:20px;
+    border:0;
+    border-radius:8px;
     background:#4285f4;
-    color:white
+    color:white;
 }
 
 #game{
     display:none;
     width:100%;
-    height:100%
+    height:100%;
 }
-
-#info{
-    margin-top:10px;
-    padding:12px;
-    background:#111820;
-    border-radius:8px;
-    word-break:break-all
-}
-
-
-/* TOUCH CONTROLS */
 
 #controls{
-    position:fixed;
-    left:20px;
-    bottom:20px;
-    width:180px;
-    height:180px;
-    display:none;
-    z-index:10
-}
-
-.key{
     position:absolute;
-    width:58px;
-    height:58px;
-    border:0;
-    border-radius:14px;
-    background:rgba(255,255,255,.25);
-    color:white;
-    font-size:28px;
-    font-weight:bold;
-    user-select:none;
-    touch-action:none
+    bottom:25px;
+    left:50%;
+    transform:translateX(-50%);
+    width:180px;
+    height:140px;
+    display:none;
 }
 
-.key:active,
-.key.down{
-    background:rgba(80,150,255,.8)
+.control{
+    position:absolute;
+    width:55px;
+    height:55px;
+    padding:0;
+    margin:0;
+    font-size:28px;
+    background:#4285f4;
+    opacity:0.85;
 }
 
 #up{
-    left:61px;
-    top:0
+    left:62px;
+    top:0;
+}
+
+#down{
+    left:62px;
+    bottom:0;
 }
 
 #left{
     left:0;
-    top:61px
-}
-
-#down{
-    left:61px;
-    top:61px
+    top:62px;
 }
 
 #right{
-    left:122px;
-    top:61px
-}
-
-@media (min-width:700px){
-
-    #controls{
-        left:30px;
-        bottom:30px
-    }
-
+    right:0;
+    top:62px;
 }
 </style>
 </head>
 
 <body>
-
-
-<!-- START MENU -->
 
 <div id="menu">
 
@@ -148,91 +116,50 @@ button{
 
 <h1>MINI WORLD</h1>
 
-<p>
-Enter the address of the P50 server.
-</p>
+<p>Enter the server address:</p>
 
 <input
-id="server"
-placeholder="192.168.178.33:8080"
+    id="serverAddress"
+    value="192.168.178.33:8080"
+    type="text"
 >
 
-<button onclick="join()">
-JOIN GAME
-</button>
+<button onclick="joinGame()">JOIN GAME</button>
 
-<div id="info">
-Example: 192.168.178.33:8080
-</div>
+<div id="info"></div>
 
 </div>
-
 </div>
-
-
-<!-- GAME -->
 
 <canvas id="game"></canvas>
 
-
-<!-- MOVEMENT BUTTONS -->
-
 <div id="controls">
 
-<button
-class="key"
-id="up">
-▲
-</button>
-
-<button
-class="key"
-id="left">
-◀
-</button>
-
-<button
-class="key"
-id="down">
-▼
-</button>
-
-<button
-class="key"
-id="right">
-▶
-</button>
+<button class="control" id="up">▲</button>
+<button class="control" id="down">▼</button>
+<button class="control" id="left">◀</button>
+<button class="control" id="right">▶</button>
 
 </div>
 
-
 <script>
 
-var canvas =
-document.getElementById("game");
+var canvas = document.getElementById("game");
+var ctx = canvas.getContext("2d");
 
-var ctx =
-canvas.getContext("2d");
-
-var menu =
-document.getElementById("menu");
-
-var info =
-document.getElementById("info");
-
-var controls =
-document.getElementById("controls");
+var menu = document.getElementById("menu");
+var info = document.getElementById("info");
+var controls = document.getElementById("controls");
 
 var socket = null;
 
 var players = {};
 
 var myId =
-"Player" +
-Math.floor(Math.random()*99999);
+    "Player" +
+    Math.floor(Math.random() * 99999);
 
 var myX = 0;
-
 var myY = 0;
 
 var keys = {};
@@ -240,42 +167,28 @@ var keys = {};
 var playing = false;
 
 
+/* JOIN GAME */
 
-/* JOIN SERVER */
-
-function join(){
+function joinGame(){
 
     var address =
-    document
-    .getElementById("server")
-    .value
-    .trim();
-
+        document.getElementById("serverAddress").value.trim();
 
     if(!address){
-
         info.innerHTML =
-        "Please enter the P50 server address.";
-
+            "Please enter the server address.";
         return;
-
     }
 
-
     info.innerHTML =
-    "Connecting...";
-
+        "Connecting...";
 
     try{
 
         socket =
-        new WebSocket(
-            "ws://" + address
-        );
+            new WebSocket("ws://" + address);
 
-
-        socket.onopen =
-        function(){
+        socket.onopen = function(){
 
             socket.send(
                 JSON.stringify({
@@ -284,277 +197,226 @@ function join(){
                 })
             );
 
-
             playing = true;
 
+            menu.style.display = "none";
 
-            menu.style.display =
-            "none";
+            canvas.style.display = "block";
 
-
-            canvas.style.display =
-            "block";
-
-
-            controls.style.display =
-            "block";
-
+            controls.style.display = "block";
 
             resize();
-
         };
 
 
-        socket.onmessage =
-        function(e){
+        socket.onmessage = function(event){
 
             try{
 
                 var data =
-                JSON.parse(e.data);
-
+                    JSON.parse(event.data);
 
                 if(data.type === "state"){
 
                     players =
-                    data.players;
+                        data.players;
 
                 }
 
-            }
-            catch(x){}
+            }catch(e){}
 
         };
 
 
-        socket.onerror =
-        function(){
-
-            info.innerHTML =
-            "Could not connect. Check the address and Wi-Fi.";
-
-        };
-
-
-        socket.onclose =
-        function(){
+        socket.onclose = function(){
 
             playing = false;
 
+            menu.style.display = "flex";
 
-            menu.style.display =
-            "flex";
+            canvas.style.display = "none";
 
-
-            canvas.style.display =
-            "none";
-
-
-            controls.style.display =
-            "none";
-
+            controls.style.display = "none";
 
             info.innerHTML =
-            "Disconnected from server.";
+                "<b>Disconnected</b><br><br>" +
+                "The server stopped.";
 
         };
 
-    }
-
-    catch(x){
+    }catch(e){
 
         info.innerHTML =
-        "This browser cannot use WebSockets.";
+            "Could not connect.";
 
     }
 
 }
 
 
-
 /* KEYBOARD */
 
-document.onkeydown =
-function(e){
+document.onkeydown = function(e){
 
-    keys[
-        e.key.toLowerCase()
-    ] = true;
+    keys[e.key.toLowerCase()] = true;
+
+};
+
+document.onkeyup = function(e){
+
+    keys[e.key.toLowerCase()] = false;
 
 };
 
 
-document.onkeyup =
-function(e){
+/* TOUCH CONTROLS */
 
-    keys[
-        e.key.toLowerCase()
-    ] = false;
+function holdKey(key){
 
-};
+    keys[key] = true;
 
+}
 
+function releaseKey(key){
 
-/* TOUCH BUTTONS */
+    keys[key] = false;
 
-function hold(button,key){
-
-    function start(e){
-
-        e.preventDefault();
-
-        keys[key] = true;
-
-        button.classList.add("down");
-
-    }
+}
 
 
-    function stop(e){
+/* BUTTON SETUP */
 
-        e.preventDefault();
+function setupButton(id,key){
 
-        keys[key] = false;
-
-        button.classList.remove("down");
-
-    }
+    var button =
+        document.getElementById(id);
 
 
     button.addEventListener(
         "touchstart",
-        start,
-        {passive:false}
+        function(e){
+
+            e.preventDefault();
+
+            holdKey(key);
+
+        }
     );
 
 
     button.addEventListener(
         "touchend",
-        stop,
-        {passive:false}
+        function(e){
+
+            e.preventDefault();
+
+            releaseKey(key);
+
+        }
     );
 
 
     button.addEventListener(
         "touchcancel",
-        stop,
-        {passive:false}
+        function(e){
+
+            e.preventDefault();
+
+            releaseKey(key);
+
+        }
     );
 
 
     button.addEventListener(
         "mousedown",
-        start
+        function(){
+
+            holdKey(key);
+
+        }
     );
 
 
     button.addEventListener(
         "mouseup",
-        stop
+        function(){
+
+            releaseKey(key);
+
+        }
     );
 
 
     button.addEventListener(
         "mouseleave",
-        stop
+        function(){
+
+            releaseKey(key);
+
+        }
     );
 
 }
 
 
-hold(
-    document.getElementById("up"),
-    "w"
-);
-
-
-hold(
-    document.getElementById("down"),
-    "s"
-);
-
-
-hold(
-    document.getElementById("left"),
-    "a"
-);
-
-
-hold(
-    document.getElementById("right"),
-    "d"
-);
-
+setupButton("up","w");
+setupButton("down","s");
+setupButton("left","a");
+setupButton("right","d");
 
 
 /* SEND MOVEMENT */
 
-setInterval(
-function(){
+setInterval(function(){
 
-    if(
-        !playing ||
-        !socket ||
-        socket.readyState !== 1
-    ){
-
+    if(!playing){
         return;
-
     }
 
-
-    if(
-        keys["w"] ||
-        keys["arrowup"]
-    ){
+    if(keys["w"] ||
+       keys["arrowup"]){
 
         myY -= 4;
 
     }
 
-
-    if(
-        keys["s"] ||
-        keys["arrowdown"]
-    ){
+    if(keys["s"] ||
+       keys["arrowdown"]){
 
         myY += 4;
 
     }
 
-
-    if(
-        keys["a"] ||
-        keys["arrowleft"]
-    ){
+    if(keys["a"] ||
+       keys["arrowleft"]){
 
         myX -= 4;
 
     }
 
-
-    if(
-        keys["d"] ||
-        keys["arrowright"]
-    ){
+    if(keys["d"] ||
+       keys["arrowright"]){
 
         myX += 4;
 
     }
 
 
-    socket.send(
-        JSON.stringify({
-            type:"move",
-            x:myX,
-            y:myY
-        })
-    );
+    if(socket &&
+       socket.readyState === 1){
 
-},
-30
-);
+        socket.send(
+            JSON.stringify({
+                type:"move",
+                x:myX,
+                y:myY
+            })
+        );
 
+    }
+
+},30);
 
 
 /* RESIZE */
@@ -562,159 +424,152 @@ function(){
 function resize(){
 
     canvas.width =
-    window.innerWidth;
+        window.innerWidth;
 
     canvas.height =
-    window.innerHeight;
+        window.innerHeight;
 
 }
 
-window.onresize =
-resize;
-
+window.onresize = resize;
 
 
 /* DRAW GAME */
 
 function draw(){
 
-    if(playing){
+    if(!playing){
 
-        ctx.fillStyle =
+        requestAnimationFrame(draw);
+
+        return;
+
+    }
+
+
+    ctx.fillStyle =
         "#18202a";
 
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-        ctx.fillRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
 
+    /* GRID */
 
-        /* GRID */
-
-        ctx.strokeStyle =
+    ctx.strokeStyle =
         "#293747";
 
 
-        var x;
-        var y;
+    var x;
+    var y;
 
 
-        for(
-            x=-2000;
-            x<2000;
-            x+=50
-        ){
+    for(
+        x=-2000;
+        x<2000;
+        x+=50
+    ){
 
-            ctx.beginPath();
+        ctx.beginPath();
 
+        ctx.moveTo(
+            canvas.width/2+x,
+            0
+        );
 
-            ctx.moveTo(
-                canvas.width/2+x,
-                0
-            );
+        ctx.lineTo(
+            canvas.width/2+x,
+            canvas.height
+        );
 
+        ctx.stroke();
 
-            ctx.lineTo(
-                canvas.width/2+x,
-                canvas.height
-            );
-
-
-            ctx.stroke();
-
-        }
+    }
 
 
-        for(
-            y=-2000;
-            y<2000;
-            y+=50
-        ){
+    for(
+        y=-2000;
+        y<2000;
+        y+=50
+    ){
 
-            ctx.beginPath();
+        ctx.beginPath();
 
+        ctx.moveTo(
+            0,
+            canvas.height/2+y
+        );
 
-            ctx.moveTo(
-                0,
-                canvas.height/2+y
-            );
+        ctx.lineTo(
+            canvas.width,
+            canvas.height/2+y
+        );
 
+        ctx.stroke();
 
-            ctx.lineTo(
-                canvas.width,
-                canvas.height/2+y
-            );
-
-
-            ctx.stroke();
-
-        }
+    }
 
 
+    /* PLAYERS */
 
-        /* PLAYERS */
+    for(var id in players){
 
-        for(
-            var id in players
-        ){
-
-            var p =
+        var p =
             players[id];
 
+        var px =
+            canvas.width/2 + p.x;
 
-            var px =
-            canvas.width/2 +
-            p.x;
-
-
-            var py =
-            canvas.height/2 +
-            p.y;
+        var py =
+            canvas.height/2 + p.y;
 
 
-            ctx.beginPath();
+        ctx.beginPath();
+
+        ctx.arc(
+            px,
+            py,
+            18,
+            0,
+            Math.PI*2
+        );
 
 
-            ctx.arc(
-                px,
-                py,
-                18,
-                0,
-                Math.PI*2
-            );
-
+        if(id === myId){
 
             ctx.fillStyle =
-            (id === myId)
-            ? "#55a0ff"
-            : "#ffb84d";
+                "#55a0ff";
 
-
-            ctx.fill();
-
+        }else{
 
             ctx.fillStyle =
+                "#ffb84d";
+
+        }
+
+
+        ctx.fill();
+
+
+        ctx.fillStyle =
             "white";
 
-
-            ctx.font =
+        ctx.font =
             "14px Arial";
 
-
-            ctx.textAlign =
+        ctx.textAlign =
             "center";
 
 
-            ctx.fillText(
-                id,
-                px,
-                py-25
-            );
-
-        }
+        ctx.fillText(
+            id,
+            px,
+            py-25
+        );
 
     }
 
