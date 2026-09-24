@@ -1,528 +1,435 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hotdog Clicker - Mobile</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini World</title>
 
 <style>
 html,body{
-  margin:0;
-  padding:0;
-  min-height:100%;
-  background:#fff1c7;
-  font-family:Arial,sans-serif;
-  color:#4b2414;
-  text-align:center;
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#18202a;
+    color:white;
+    font-family:Arial
 }
 
-body{
-  padding-bottom:20px;
+#menu{
+    position:absolute;
+    left:0;
+    top:0;
+    right:0;
+    bottom:0;
+    background:#10151c;
+    display:flex;
+    justify-content:center;
+    align-items:center
+}
+
+.box{
+    width:90%;
+    max-width:420px;
+    background:#222b38;
+    padding:25px;
+    box-sizing:border-box;
+    border-radius:15px;
+    text-align:center
+}
+
+input,button{
+    width:100%;
+    box-sizing:border-box;
+    padding:15px;
+    margin:7px 0;
+    font-size:18px;
+    border-radius:8px;
+    border:0
+}
+
+input{
+    background:#111820;
+    color:white;
+    border:1px solid #667
+}
+
+button{
+    background:#4285f4;
+    color:white
 }
 
 #game{
-  max-width:520px;
-  margin:0 auto;
-  padding:12px;
-  box-sizing:border-box;
+    display:none;
+    width:100%;
+    height:100%
 }
 
-h1{
-  font-size:28px;
-  margin:8px 0;
-}
-
-#score{
-  background:#fff;
-  border:3px solid #d58a36;
-  border-radius:12px;
-  padding:10px;
-  font-size:22px;
-  font-weight:bold;
-}
-
-#hotdog{
-  display:block;
-  margin:22px auto 15px;
-  width:260px;
-  height:150px;
-  border:0;
-  background:transparent;
-  cursor:pointer;
-  touch-action:manipulation;
-}
-
-#hotdog:active{
-  transform:scale(.94);
-}
-
-.bun{
-  position:relative;
-  width:230px;
-  height:82px;
-  margin:30px auto 0;
-  background:#d58a35;
-  border:7px solid #a95b25;
-  border-radius:70px 70px 35px 35px;
-  box-sizing:border-box;
-}
-
-.sausage{
-  position:absolute;
-  left:8px;
-  top:25px;
-  width:200px;
-  height:32px;
-  background:#bd3d25;
-  border:5px solid #8c291c;
-  border-radius:25px;
-}
-
-.mustard{
-  position:absolute;
-  left:25px;
-  top:10px;
-  width:175px;
-  height:8px;
-  background:#ffd83d;
-  border-radius:10px;
-  transform:rotate(-7deg);
-}
-
-#message{
-  height:24px;
-  font-weight:bold;
-}
-
-.panel{
-  background:#fff;
-  border:2px solid #e0a04e;
-  border-radius:12px;
-  padding:10px;
-  margin:10px 0;
-}
-
-button.action{
-  width:100%;
-  min-height:48px;
-  margin:5px 0;
-  border:2px solid #7b431e;
-  border-radius:10px;
-  background:#f4bd56;
-  color:#4b2414;
-  font-size:17px;
-  font-weight:bold;
-}
-
-button.action:disabled{
-  opacity:.45;
-}
-
-.small{
-  font-size:13px;
+#info{
+    margin-top:10px;
+    padding:12px;
+    background:#111820;
+    border-radius:8px;
+    word-break:break-all
 }
 </style>
 </head>
 
 <body>
 
-<div id="game">
+<div id="menu">
+<div class="box">
 
-  <h1>🌭 HOTDOG CLICKER 🌭</h1>
+<h1>MINI WORLD</h1>
 
-  <div id="score">
+<p>Enter the address of the P50 server.</p>
 
-    Hotdogs:
-    <span id="count">0</span>
+<input id="server" placeholder="192.168.1.25:8080">
 
-    <br>
+<button onclick="join()">JOIN GAME</button>
 
-    <span class="small">
-
-      Per click:
-      <span id="power">1</span>
-
-      • Auto/sec:
-      <span id="auto">0</span>
-
-    </span>
-
-  </div>
-
-
-  <!-- Clickable hotdog -->
-
-  <button id="hotdog" aria-label="Click the hotdog">
-
-    <div class="bun">
-
-      <div class="sausage"></div>
-
-      <div class="mustard"></div>
-
-    </div>
-
-  </button>
-
-
-  <div id="message">
-    Tap the hotdog!
-  </div>
-
-
-  <!-- Upgrades -->
-
-  <div class="panel">
-
-    <h2>Upgrades</h2>
-
-    <button class="action" id="buyPower">
-
-      🍅 Bigger Bite —
-      Cost: <span id="powerCost">25</span>
-
-    </button>
-
-
-    <button class="action" id="buyAuto">
-
-      🤖 Hotdog Machine —
-      Cost: <span id="autoCost">100</span>
-
-    </button>
-
-  </div>
-
-
-  <!-- Save and reset -->
-
-  <div class="panel">
-
-    <button class="action" id="save">
-      💾 SAVE GAME
-    </button>
-
-    <button class="action" id="reset">
-      🔄 RESET GAME
-    </button>
-
-    <div class="small">
-
-      Works offline.
-      Uses older-style JavaScript for older browsers.
-
-    </div>
-
-  </div>
-
+<div id="info">
+Example: 192.168.1.25:8080
 </div>
 
+</div>
+</div>
 
-<script type="text/javascript">
+<canvas id="game"></canvas>
 
-(function(){
+<script>
 
-var count = 0;
-var power = 1;
-var auto = 0;
+var canvas=document.getElementById("game");
+var ctx=canvas.getContext("2d");
 
-var powerCost = 25;
-var autoCost = 100;
+var menu=document.getElementById("menu");
+var info=document.getElementById("info");
 
+var socket=null;
 
-var countEl =
-  document.getElementById("count");
+var players={};
 
-var powerEl =
-  document.getElementById("power");
+var myId="Player"+Math.floor(Math.random()*99999);
 
-var autoEl =
-  document.getElementById("auto");
+var myX=0;
+var myY=0;
 
-var powerCostEl =
-  document.getElementById("powerCost");
+var keys={};
 
-var autoCostEl =
-  document.getElementById("autoCost");
+var playing=false;
 
-var messageEl =
-  document.getElementById("message");
 
-var powerButton =
-  document.getElementById("buyPower");
+function join(){
 
-var autoButton =
-  document.getElementById("buyAuto");
+    var address=
+        document.getElementById("server").value;
 
+    if(!address){
 
-// Update the screen
+        info.innerHTML=
+            "Please enter the P50 server address.";
 
-function update(){
-
-  countEl.innerHTML = Math.floor(count);
-
-  powerEl.innerHTML = power;
-
-  autoEl.innerHTML = auto;
-
-  powerCostEl.innerHTML = powerCost;
-
-  autoCostEl.innerHTML = autoCost;
-
-
-  powerButton.disabled =
-    count < powerCost;
-
-  autoButton.disabled =
-    count < autoCost;
-
-}
-
-
-// Show a message
-
-function say(text){
-
-  messageEl.innerHTML = text;
-
-}
-
-
-// Click the hotdog
-
-function clickHotdog(){
-
-  count = count + power;
-
-  say(
-    "YUM! +" +
-    power +
-    " hotdog(s) 🌭"
-  );
-
-  update();
-
-}
-
-
-// Buy bigger bites
-
-function buyPower(){
-
-  if(count >= powerCost){
-
-    count = count - powerCost;
-
-    power = power + 1;
-
-    powerCost =
-      Math.floor(powerCost * 1.7);
-
-    say(
-      "Your bites got bigger! 🍅"
-    );
-
-    update();
-
-  }
-
-}
-
-
-// Buy automatic hotdogs
-
-function buyAuto(){
-
-  if(count >= autoCost){
-
-    count = count - autoCost;
-
-    auto = auto + 1;
-
-    autoCost =
-      Math.floor(autoCost * 2);
-
-    say(
-      "A hotdog machine joined you! 🤖"
-    );
-
-    update();
-
-  }
-
-}
-
-
-// Save the game
-
-function saveGame(){
-
-  try{
-
-    localStorage.setItem(
-      "hotdogClickerSave",
-
-      count + "|" +
-      power + "|" +
-      auto + "|" +
-      powerCost + "|" +
-      autoCost
-    );
-
-    say("Game saved! 💾");
-
-  }catch(e){
-
-    say(
-      "Saving is not supported on this browser."
-    );
-
-  }
-
-}
-
-
-// Load the saved game
-
-function loadGame(){
-
-  try{
-
-    var saved =
-      localStorage.getItem(
-        "hotdogClickerSave"
-      );
-
-    if(saved){
-
-      var parts =
-        saved.split("|");
-
-      if(parts.length === 5){
-
-        count =
-          parseFloat(parts[0]) || 0;
-
-        power =
-          parseInt(parts[1],10) || 1;
-
-        auto =
-          parseInt(parts[2],10) || 0;
-
-        powerCost =
-          parseInt(parts[3],10) || 25;
-
-        autoCost =
-          parseInt(parts[4],10) || 100;
-
-      }
-
+        return;
     }
 
-  }catch(e){}
-
-}
-
-
-// Reset the game
-
-function resetGame(){
-
-  if(window.confirm(
-    "Reset all hotdogs?"
-  )){
-
-    count = 0;
-
-    power = 1;
-
-    auto = 0;
-
-    powerCost = 25;
-
-    autoCost = 100;
+    info.innerHTML=
+        "Connecting...";
 
 
     try{
 
-      localStorage.removeItem(
-        "hotdogClickerSave"
-      );
-
-    }catch(e){}
+        socket=new WebSocket(
+            "ws://"+address
+        );
 
 
-    say("Fresh start! 🌭");
+        socket.onopen=function(){
 
-    update();
+            socket.send(
+                JSON.stringify({
+                    type:"join",
+                    id:myId
+                })
+            );
 
-  }
+            playing=true;
+
+            menu.style.display="none";
+
+            canvas.style.display="block";
+
+            resize();
+
+        };
+
+
+        socket.onmessage=function(e){
+
+            try{
+
+                var data=
+                    JSON.parse(e.data);
+
+                if(data.type==="state"){
+
+                    players=
+                        data.players;
+
+                }
+
+            }catch(x){}
+
+        };
+
+
+        socket.onerror=function(){
+
+            info.innerHTML=
+                "Could not connect. Check the address and Wi-Fi.";
+
+        };
+
+
+        socket.onclose=function(){
+
+            playing=false;
+
+            menu.style.display="flex";
+
+            canvas.style.display="none";
+
+            info.innerHTML=
+                "Disconnected from server.";
+
+        };
+
+    }catch(x){
+
+        info.innerHTML=
+            "This browser cannot use WebSockets.";
+
+    }
 
 }
 
 
-// Connect buttons
+document.onkeydown=function(e){
 
-document.getElementById(
-  "hotdog"
-).onclick = clickHotdog;
-
-
-// Touch support for mobile
-
-document.getElementById(
-  "hotdog"
-).ontouchstart = function(e){
-
-  e.preventDefault();
-
-  clickHotdog();
+    keys[
+        e.key.toLowerCase()
+    ]=true;
 
 };
 
 
-document.getElementById(
-  "buyPower"
-).onclick = buyPower;
+document.onkeyup=function(e){
 
+    keys[
+        e.key.toLowerCase()
+    ]=false;
 
-document.getElementById(
-  "buyAuto"
-).onclick = buyAuto;
+};
 
-
-document.getElementById(
-  "save"
-).onclick = saveGame;
-
-
-document.getElementById(
-  "reset"
-).onclick = resetGame;
-
-
-// Automatic hotdogs every second
 
 setInterval(function(){
 
-  if(auto > 0){
+    if(
+        !playing ||
+        !socket ||
+        socket.readyState!==1
+    ){
 
-    count = count + auto;
+        return;
 
-    update();
-
-  }
-
-},1000);
+    }
 
 
-// Start the game
+    if(
+        keys["w"] ||
+        keys["arrowup"]
+    ){
 
-loadGame();
+        myY-=4;
 
-update();
+    }
 
-})();
+
+    if(
+        keys["s"] ||
+        keys["arrowdown"]
+    ){
+
+        myY+=4;
+
+    }
+
+
+    if(
+        keys["a"] ||
+        keys["arrowleft"]
+    ){
+
+        myX-=4;
+
+    }
+
+
+    if(
+        keys["d"] ||
+        keys["arrowright"]
+    ){
+
+        myX+=4;
+
+    }
+
+
+    socket.send(
+        JSON.stringify({
+            type:"move",
+            x:myX,
+            y:myY
+        })
+    );
+
+},30);
+
+
+function resize(){
+
+    canvas.width=
+        window.innerWidth;
+
+    canvas.height=
+        window.innerHeight;
+
+}
+
+
+window.onresize=resize;
+
+
+function draw(){
+
+    if(playing){
+
+        ctx.fillStyle="#18202a";
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        ctx.strokeStyle="#293747";
+
+        var x;
+        var y;
+
+
+        for(
+            x=-2000;
+            x<2000;
+            x+=50
+        ){
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                canvas.width/2+x,
+                0
+            );
+
+            ctx.lineTo(
+                canvas.width/2+x,
+                canvas.height
+            );
+
+            ctx.stroke();
+
+        }
+
+
+        for(
+            y=-2000;
+            y<2000;
+            y+=50
+        ){
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                0,
+                canvas.height/2+y
+            );
+
+            ctx.lineTo(
+                canvas.width,
+                canvas.height/2+y
+            );
+
+            ctx.stroke();
+
+        }
+
+
+        for(var id in players){
+
+            var p=players[id];
+
+            var px=
+                canvas.width/2+p.x;
+
+            var py=
+                canvas.height/2+p.y;
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+                px,
+                py,
+                18,
+                0,
+                Math.PI*2
+            );
+
+
+            ctx.fillStyle=
+                (id===myId)
+                ? "#55a0ff"
+                : "#ffb84d";
+
+            ctx.fill();
+
+
+            ctx.fillStyle="white";
+
+            ctx.font="14px Arial";
+
+            ctx.textAlign="center";
+
+            ctx.fillText(
+                id,
+                px,
+                py-25
+            );
+
+        }
+
+    }
+
+
+    requestAnimationFrame(draw);
+
+}
+
+
+resize();
+
+draw();
 
 </script>
 
