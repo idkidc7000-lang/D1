@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mini World</title>
 
 <style>
@@ -13,7 +13,8 @@ html,body{
     overflow:hidden;
     background:#18202a;
     color:white;
-    font-family:Arial
+    font-family:Arial;
+    touch-action:none
 }
 
 #menu{
@@ -72,78 +73,209 @@ button{
     border-radius:8px;
     word-break:break-all
 }
+
+
+/* TOUCH CONTROLS */
+
+#controls{
+    position:fixed;
+    left:20px;
+    bottom:20px;
+    width:180px;
+    height:180px;
+    display:none;
+    z-index:10
+}
+
+.key{
+    position:absolute;
+    width:58px;
+    height:58px;
+    border:0;
+    border-radius:14px;
+    background:rgba(255,255,255,.25);
+    color:white;
+    font-size:28px;
+    font-weight:bold;
+    user-select:none;
+    touch-action:none
+}
+
+.key:active,
+.key.down{
+    background:rgba(80,150,255,.8)
+}
+
+#up{
+    left:61px;
+    top:0
+}
+
+#left{
+    left:0;
+    top:61px
+}
+
+#down{
+    left:61px;
+    top:61px
+}
+
+#right{
+    left:122px;
+    top:61px
+}
+
+@media (min-width:700px){
+
+    #controls{
+        left:30px;
+        bottom:30px
+    }
+
+}
 </style>
 </head>
 
 <body>
 
+
+<!-- START MENU -->
+
 <div id="menu">
+
 <div class="box">
 
 <h1>MINI WORLD</h1>
 
-<p>Enter the address of the P50 server.</p>
+<p>
+Enter the address of the P50 server.
+</p>
 
-<input id="server" placeholder="192.168.1.25:8080">
+<input
+id="server"
+placeholder="192.168.178.33:8080"
+>
 
-<button onclick="join()">JOIN GAME</button>
+<button onclick="join()">
+JOIN GAME
+</button>
 
 <div id="info">
-Example: 192.168.1.25:8080
+Example: 192.168.178.33:8080
 </div>
 
 </div>
+
 </div>
+
+
+<!-- GAME -->
 
 <canvas id="game"></canvas>
 
+
+<!-- MOVEMENT BUTTONS -->
+
+<div id="controls">
+
+<button
+class="key"
+id="up">
+▲
+</button>
+
+<button
+class="key"
+id="left">
+◀
+</button>
+
+<button
+class="key"
+id="down">
+▼
+</button>
+
+<button
+class="key"
+id="right">
+▶
+</button>
+
+</div>
+
+
 <script>
 
-var canvas=document.getElementById("game");
-var ctx=canvas.getContext("2d");
+var canvas =
+document.getElementById("game");
 
-var menu=document.getElementById("menu");
-var info=document.getElementById("info");
+var ctx =
+canvas.getContext("2d");
 
-var socket=null;
+var menu =
+document.getElementById("menu");
 
-var players={};
+var info =
+document.getElementById("info");
 
-var myId="Player"+Math.floor(Math.random()*99999);
+var controls =
+document.getElementById("controls");
 
-var myX=0;
-var myY=0;
+var socket = null;
 
-var keys={};
+var players = {};
 
-var playing=false;
+var myId =
+"Player" +
+Math.floor(Math.random()*99999);
 
+var myX = 0;
+
+var myY = 0;
+
+var keys = {};
+
+var playing = false;
+
+
+
+/* JOIN SERVER */
 
 function join(){
 
-    var address=
-        document.getElementById("server").value;
+    var address =
+    document
+    .getElementById("server")
+    .value
+    .trim();
+
 
     if(!address){
 
-        info.innerHTML=
-            "Please enter the P50 server address.";
+        info.innerHTML =
+        "Please enter the P50 server address.";
 
         return;
+
     }
 
-    info.innerHTML=
-        "Connecting...";
+
+    info.innerHTML =
+    "Connecting...";
 
 
     try{
 
-        socket=new WebSocket(
-            "ws://"+address
+        socket =
+        new WebSocket(
+            "ws://" + address
         );
 
 
-        socket.onopen=function(){
+        socket.onopen =
+        function(){
 
             socket.send(
                 JSON.stringify({
@@ -152,91 +284,218 @@ function join(){
                 })
             );
 
-            playing=true;
 
-            menu.style.display="none";
+            playing = true;
 
-            canvas.style.display="block";
+
+            menu.style.display =
+            "none";
+
+
+            canvas.style.display =
+            "block";
+
+
+            controls.style.display =
+            "block";
+
 
             resize();
 
         };
 
 
-        socket.onmessage=function(e){
+        socket.onmessage =
+        function(e){
 
             try{
 
-                var data=
-                    JSON.parse(e.data);
+                var data =
+                JSON.parse(e.data);
 
-                if(data.type==="state"){
 
-                    players=
-                        data.players;
+                if(data.type === "state"){
+
+                    players =
+                    data.players;
 
                 }
 
-            }catch(x){}
+            }
+            catch(x){}
 
         };
 
 
-        socket.onerror=function(){
+        socket.onerror =
+        function(){
 
-            info.innerHTML=
-                "Could not connect. Check the address and Wi-Fi.";
-
-        };
-
-
-        socket.onclose=function(){
-
-            playing=false;
-
-            menu.style.display="flex";
-
-            canvas.style.display="none";
-
-            info.innerHTML=
-                "Disconnected from server.";
+            info.innerHTML =
+            "Could not connect. Check the address and Wi-Fi.";
 
         };
 
-    }catch(x){
 
-        info.innerHTML=
-            "This browser cannot use WebSockets.";
+        socket.onclose =
+        function(){
+
+            playing = false;
+
+
+            menu.style.display =
+            "flex";
+
+
+            canvas.style.display =
+            "none";
+
+
+            controls.style.display =
+            "none";
+
+
+            info.innerHTML =
+            "Disconnected from server.";
+
+        };
+
+    }
+
+    catch(x){
+
+        info.innerHTML =
+        "This browser cannot use WebSockets.";
 
     }
 
 }
 
 
-document.onkeydown=function(e){
+
+/* KEYBOARD */
+
+document.onkeydown =
+function(e){
 
     keys[
         e.key.toLowerCase()
-    ]=true;
+    ] = true;
 
 };
 
 
-document.onkeyup=function(e){
+document.onkeyup =
+function(e){
 
     keys[
         e.key.toLowerCase()
-    ]=false;
+    ] = false;
 
 };
 
 
-setInterval(function(){
+
+/* TOUCH BUTTONS */
+
+function hold(button,key){
+
+    function start(e){
+
+        e.preventDefault();
+
+        keys[key] = true;
+
+        button.classList.add("down");
+
+    }
+
+
+    function stop(e){
+
+        e.preventDefault();
+
+        keys[key] = false;
+
+        button.classList.remove("down");
+
+    }
+
+
+    button.addEventListener(
+        "touchstart",
+        start,
+        {passive:false}
+    );
+
+
+    button.addEventListener(
+        "touchend",
+        stop,
+        {passive:false}
+    );
+
+
+    button.addEventListener(
+        "touchcancel",
+        stop,
+        {passive:false}
+    );
+
+
+    button.addEventListener(
+        "mousedown",
+        start
+    );
+
+
+    button.addEventListener(
+        "mouseup",
+        stop
+    );
+
+
+    button.addEventListener(
+        "mouseleave",
+        stop
+    );
+
+}
+
+
+hold(
+    document.getElementById("up"),
+    "w"
+);
+
+
+hold(
+    document.getElementById("down"),
+    "s"
+);
+
+
+hold(
+    document.getElementById("left"),
+    "a"
+);
+
+
+hold(
+    document.getElementById("right"),
+    "d"
+);
+
+
+
+/* SEND MOVEMENT */
+
+setInterval(
+function(){
 
     if(
         !playing ||
         !socket ||
-        socket.readyState!==1
+        socket.readyState !== 1
     ){
 
         return;
@@ -249,7 +508,7 @@ setInterval(function(){
         keys["arrowup"]
     ){
 
-        myY-=4;
+        myY -= 4;
 
     }
 
@@ -259,7 +518,7 @@ setInterval(function(){
         keys["arrowdown"]
     ){
 
-        myY+=4;
+        myY += 4;
 
     }
 
@@ -269,7 +528,7 @@ setInterval(function(){
         keys["arrowleft"]
     ){
 
-        myX-=4;
+        myX -= 4;
 
     }
 
@@ -279,7 +538,7 @@ setInterval(function(){
         keys["arrowright"]
     ){
 
-        myX+=4;
+        myX += 4;
 
     }
 
@@ -292,28 +551,38 @@ setInterval(function(){
         })
     );
 
-},30);
+},
+30
+);
 
+
+
+/* RESIZE */
 
 function resize(){
 
-    canvas.width=
-        window.innerWidth;
+    canvas.width =
+    window.innerWidth;
 
-    canvas.height=
-        window.innerHeight;
+    canvas.height =
+    window.innerHeight;
 
 }
 
+window.onresize =
+resize;
 
-window.onresize=resize;
 
+
+/* DRAW GAME */
 
 function draw(){
 
     if(playing){
 
-        ctx.fillStyle="#18202a";
+        ctx.fillStyle =
+        "#18202a";
+
 
         ctx.fillRect(
             0,
@@ -323,7 +592,11 @@ function draw(){
         );
 
 
-        ctx.strokeStyle="#293747";
+        /* GRID */
+
+        ctx.strokeStyle =
+        "#293747";
+
 
         var x;
         var y;
@@ -337,15 +610,18 @@ function draw(){
 
             ctx.beginPath();
 
+
             ctx.moveTo(
                 canvas.width/2+x,
                 0
             );
 
+
             ctx.lineTo(
                 canvas.width/2+x,
                 canvas.height
             );
+
 
             ctx.stroke();
 
@@ -360,33 +636,47 @@ function draw(){
 
             ctx.beginPath();
 
+
             ctx.moveTo(
                 0,
                 canvas.height/2+y
             );
+
 
             ctx.lineTo(
                 canvas.width,
                 canvas.height/2+y
             );
 
+
             ctx.stroke();
 
         }
 
 
-        for(var id in players){
 
-            var p=players[id];
+        /* PLAYERS */
 
-            var px=
-                canvas.width/2+p.x;
+        for(
+            var id in players
+        ){
 
-            var py=
-                canvas.height/2+p.y;
+            var p =
+            players[id];
+
+
+            var px =
+            canvas.width/2 +
+            p.x;
+
+
+            var py =
+            canvas.height/2 +
+            p.y;
 
 
             ctx.beginPath();
+
 
             ctx.arc(
                 px,
@@ -397,19 +687,26 @@ function draw(){
             );
 
 
-            ctx.fillStyle=
-                (id===myId)
-                ? "#55a0ff"
-                : "#ffb84d";
+            ctx.fillStyle =
+            (id === myId)
+            ? "#55a0ff"
+            : "#ffb84d";
+
 
             ctx.fill();
 
 
-            ctx.fillStyle="white";
+            ctx.fillStyle =
+            "white";
 
-            ctx.font="14px Arial";
 
-            ctx.textAlign="center";
+            ctx.font =
+            "14px Arial";
+
+
+            ctx.textAlign =
+            "center";
+
 
             ctx.fillText(
                 id,
